@@ -1,0 +1,33 @@
+rule "Arduino0 update"
+    when
+        Item Arduino0 received update
+    then
+        var arduinoOutput = Arduino0.state.toString
+        // Ignore data sent to Arduino
+        if (arduinoOutput.startsWith(">"))
+            return false;
+        // Check for errors
+        if (arduinoOutput.startsWith("E_DHT_READ")) {
+            logError("story1", "Arduino0 failed to read sensor data")
+            return false;
+        }
+
+        var humidity = transform("REGEX", "HUMIDITY(\\d+).*",
+            arduinoOutput)
+        var temperature = transform("REGEX", ".*TEMPERATURE(\\d+).*",
+            arduinoOutput)
+
+        postUpdate(Humidity, humidity)
+        postUpdate(Temperature, temperature)
+        postUpdate(Led, if (Temperature.state >= 23) ON else OFF)
+end
+
+rule "LED update"
+    when
+        Item Led received update
+    then
+        if (Led.state == ON)
+            sendCommand(Arduino0, ">LED=ON\n")
+        else
+            sendCommand(Arduino0, ">LED=OFF\n")
+end
