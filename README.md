@@ -1,2 +1,2 @@
-# smart-garden-project
+# Smart Garden Project
 Smart garden software, for Ensimag smart building project (2015−2016)
