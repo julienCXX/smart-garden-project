@@ -8,13 +8,14 @@ void setup()
 void loop()
 {
   ad_value=analogRead(Moisture_ain);
-  if(ad_value>200)
-  {
-    Serial.println("Eat drink");
-  }
+  /*if(ad_value>200)
+  {*/
+    Serial.print("Pot 1 ");
+    Serial.println(ad_value);
+  /*}
   else
   {
     Serial.println("Thirsty");
-  }
+  }*/
   delay(500);
 }
