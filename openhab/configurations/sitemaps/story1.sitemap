@@ -3,6 +3,7 @@ sitemap story1 label="Scénario 1"
     Frame {
         Text item=Humidity
         Text item=Temperature
+        Text item=EarthHumidity
         Switch item=Led
     }
 }

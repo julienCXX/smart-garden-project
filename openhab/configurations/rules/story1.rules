@@ -12,6 +12,7 @@ rule "Arduino0 update"
             return false;
         }
 
+        /*
         var humidity = transform("REGEX", "HUMIDITY(\\d+).*",
             arduinoOutput)
         var temperature = transform("REGEX", ".*TEMPERATURE(\\d+).*",
@@ -20,6 +21,11 @@ rule "Arduino0 update"
         postUpdate(Humidity, humidity)
         postUpdate(Temperature, temperature)
         postUpdate(Led, if (Temperature.state >= 23) ON else OFF)
+        */
+        var earthHumidity = transform("REGEX", "HUMIDITY(\\d+).*",
+            arduinoOutput)
+        postUpdate(EarthHumidity, earthHumidity)
+        postUpdate(Led, if (EarthHumidity.state < 600) ON else OFF)
 end
 
 rule "LED update"

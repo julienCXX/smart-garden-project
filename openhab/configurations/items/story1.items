@@ -2,4 +2,5 @@ String Arduino0 "Arduino 0" { serial="/dev/ttyACM0" }
 
 Number Humidity "Humidité [%d %%]" <water>
 Number Temperature "Température [%d °C]" <temperature>
+Number EarthHumidity "Humidité de la terre [%d]" <water>
 Switch Led "Del"
