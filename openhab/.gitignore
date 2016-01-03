@@ -3,9 +3,14 @@ configurations/openhab.cfg
 
 # Runtime-generated files
 logs/
+server/configuration/*.log
 server/configuration/org.eclipse.core.runtime/
 server/configuration/org.eclipse.equinox.app/
 server/configuration/org.eclipse.osgi/
 webapps/static/uuid
 webapps/static/version
 workspace/
+
+# Editor-specific files
+*~
+*.swp
