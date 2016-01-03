@@ -1,15 +1,23 @@
+var Number MIN_WAIT_BETWEEN_WATERINGS = 10 // Unit: refresh iteration
+var Number MAX_HUMIDITY_PERCENT = 30
+
+var Number iterationsWoWatering = 0
+
 rule "Arduino0 update"
     when
         Item Arduino0 received update
     then
+        logDebug("story1", "No watering since "
+            + iterationsWoWatering.intValue() + " iterations")
+
         var arduinoOutput = Arduino0.state.toString
         // Ignore data sent to Arduino
         if (arduinoOutput.startsWith(">"))
-            return false;
+            return false
         // Check for errors
         if (arduinoOutput.startsWith("E_DHT_READ")) {
             logError("story1", "Arduino0 failed to read sensor data")
-            return false;
+            return false
         }
 
         /*
@@ -25,7 +33,16 @@ rule "Arduino0 update"
         var earthHumidity = transform("REGEX", "HUMIDITY(\\d+).*",
             arduinoOutput)
         postUpdate(EarthHumidity, earthHumidity)
-        postUpdate(Led, if (EarthHumidity.state < 600) ON else OFF)
+
+        // Watering if conditions are met
+        if (iterationsWoWatering >= MIN_WAIT_BETWEEN_WATERINGS
+            && EarthHumidity.state < MAX_HUMIDITY_PERCENT) {
+            iterationsWoWatering = 0
+            logDebug("story1", "Watering!")
+            sendCommand(Arduino0, ">MOTOR=PULSE\n")
+        } else {
+            iterationsWoWatering = iterationsWoWatering + 1
+        }
 end
 
 rule "LED update"
