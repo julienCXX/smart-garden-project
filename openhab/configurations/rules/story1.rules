@@ -1,5 +1,6 @@
 var Number MIN_WAIT_BETWEEN_WATERINGS = 10 // Unit: refresh iteration
 var Number MAX_HUMIDITY_PERCENT = 30
+var Number MIN_TANK_LEVEL_PERCENT = 20
 
 var Number iterationsWoWatering = 0
 
@@ -33,10 +34,14 @@ rule "Arduino0 update"
         var earthHumidity = transform("REGEX", "HUMIDITY(\\d+).*",
             arduinoOutput)
         postUpdate(EarthHumidity, earthHumidity)
+        var waterLevel = transform("REGEX", ".*WATER_LEVEL(\\d+).*",
+            arduinoOutput)
+        postUpdate(TankLevel, waterLevel)
 
         // Watering if conditions are met
         if (iterationsWoWatering >= MIN_WAIT_BETWEEN_WATERINGS
-            && EarthHumidity.state < MAX_HUMIDITY_PERCENT) {
+            && EarthHumidity.state < MAX_HUMIDITY_PERCENT
+            && TankLevel.state > MIN_TANK_LEVEL_PERCENT) {
             iterationsWoWatering = 0
             logDebug("story1", "Watering!")
             sendCommand(Arduino0, ">MOTOR=PULSE\n")
