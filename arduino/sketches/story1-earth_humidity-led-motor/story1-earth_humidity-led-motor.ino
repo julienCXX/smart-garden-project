@@ -1,6 +1,7 @@
 /*
  * Arduino sketch for user story #1
  * Reads earth humidity from a sensor and sends it to the serial bus
+ * Reads water tank level from a sonar and sends it to the serial bus
  * Reads commands from the serial bus, to control a LED and a motor
  * Motor is mounted with a transistor and an external power source, like:
  * https://learn.adafruit.com/adafruit-arduino-lesson-13-dc-motors/transistors
@@ -9,6 +10,8 @@
 #define HUMIDITYPIN A0 // The analog pin the earth humidity sensor is connected to
 #define LEDPIN 13 // The digital pin the LED is connected to
 #define MOTORPIN 5 // The digital pin the motor command is connected to
+#define SONAR_ECHOPIN 11 // The digital pin the sonar echo pin is connected to (PWM only)
+#define SONAR_TRIGPIN 12 // The digital pin the sonar trig pin is connected to
 #define DELAY 1000 // The main loop delay (ms)
 #define PULSE_DURATION 500 // The motor pulse duration (ms)
 /*
@@ -17,6 +20,16 @@
  */
 #define HSENSOR_MIN 350
 #define HSENSOR_MAX 1023 // The raw humidity sensor value over which humidity is 0%
+/*
+ * The raw sonar value under which water tank is full (100%)
+ * May need to be calibrated
+ */
+#define SONAR_MIN 170
+/*
+ * The raw sonar value over which water tank is empty (0%)
+ * May need to be calibrated
+ */
+#define SONAR_MAX 620
 
 String inputString = "";
 int currentDelay = DELAY;
@@ -36,6 +49,9 @@ void setup() {
     digitalWrite(LEDPIN, LOW);
     pinMode(MOTORPIN, OUTPUT);
     digitalWrite(MOTORPIN, LOW);
+    pinMode(SONAR_TRIGPIN, OUTPUT);
+    digitalWrite(SONAR_TRIGPIN, LOW);
+    pinMode(SONAR_ECHOPIN, INPUT);
     inputString.reserve(64);
 }
 
@@ -52,7 +68,18 @@ void loop() {
     humidity = constrain(humidity, HSENSOR_MIN, HSENSOR_MAX);
     humidity = map(humidity, HSENSOR_MIN, HSENSOR_MAX, 100, 0);
     Serial.print("HUMIDITY");
-    Serial.println(humidity);
+    Serial.print(humidity);
+
+    // Reading water tank level and sending to the serial bus
+    digitalWrite(SONAR_TRIGPIN, HIGH);
+    delayMicroseconds(10);
+    digitalWrite(SONAR_TRIGPIN, LOW);
+    int distance = pulseIn(SONAR_ECHOPIN, HIGH);
+    // Converting raw value from the sonar to water level percentage
+    int waterLevel = constrain(distance, SONAR_MIN, SONAR_MAX);
+    waterLevel = map(waterLevel, SONAR_MIN, SONAR_MAX, 100, 0);
+    Serial.print(" WATER_LEVEL");
+    Serial.println(waterLevel);
 
     // Reading commands from serial bus, to control the LED and the motor
     while (Serial.available()) {
