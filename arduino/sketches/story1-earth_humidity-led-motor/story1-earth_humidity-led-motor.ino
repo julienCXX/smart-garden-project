@@ -1,25 +1,32 @@
 /*
  * Arduino sketch for user story #1
- * Reads earth humidity from a sensor and sends it to the serial bus
+ * Reads earth moisture from a sensor and sends it to the serial bus
  * Reads water tank level from a sonar and sends it to the serial bus
  * Reads commands from the serial bus, to control a LED and a motor
  * Motor is mounted with a transistor and an external power source, like:
  * https://learn.adafruit.com/adafruit-arduino-lesson-13-dc-motors/transistors
  */
 
-#define HUMIDITYPIN A0 // The analog pin the earth humidity sensor is connected to
+#include <DHT.h>
+
+#define MOISTUREPIN A0 // The analog pin the earth moisture sensor is connected to
 #define LEDPIN 13 // The digital pin the LED is connected to
 #define MOTORPIN 5 // The digital pin the motor command is connected to
+#define DHTPIN 6 // The digital pin the temperature and humidity sensor is connected to
 #define SONAR_ECHOPIN 11 // The digital pin the sonar echo pin is connected to (PWM only)
 #define SONAR_TRIGPIN 12 // The digital pin the sonar trig pin is connected to
 #define DELAY 1000 // The main loop delay (ms)
 #define PULSE_DURATION 500 // The motor pulse duration (ms)
+
+// Choosing the kind of DHT sensor
+#define DHTTYPE DHT11 // DHT 11
+
 /*
- * The raw humidity sensor value under which humidity is 100%
+ * The raw moisture sensor value under which moisture is 100%
  * May need to be calibrated
  */
-#define HSENSOR_MIN 350
-#define HSENSOR_MAX 1023 // The raw humidity sensor value over which humidity is 0%
+#define MSENSOR_MIN 350
+#define MSENSOR_MAX 1023 // The raw moisture sensor value over which moisture is 0%
 /*
  * The raw sonar value under which water tank is full (100%)
  * May need to be calibrated
@@ -30,6 +37,9 @@
  * May need to be calibrated
  */
 #define SONAR_MAX 620
+
+// Initializing DHT sensor
+DHT dht(DHTPIN, DHTTYPE);
 
 String inputString = "";
 int currentDelay = DELAY;
@@ -44,7 +54,8 @@ const String MOTOR_PULSE = ">MOTOR=PULSE\n";
 
 void setup() {
     Serial.begin(9600);
-    pinMode(HUMIDITYPIN, INPUT);
+    dht.begin();
+    pinMode(MOISTUREPIN, INPUT);
     pinMode(LEDPIN, OUTPUT);
     digitalWrite(LEDPIN, LOW);
     pinMode(MOTORPIN, OUTPUT);
@@ -58,17 +69,31 @@ void setup() {
 void loop() {
     delay(currentDelay);
 
-    // Reading humidity and sending to the serial bus
-    int humidity = analogRead(HUMIDITYPIN);
+    // Reading humidity and temperature (with error checking)
+    float h = dht.readHumidity(true); // Force reading
+    float t = dht.readTemperature(false, true); // In °C, force reading
+    if (isnan(h) || isnan(t)) {
+      Serial.println("E_DHT_READ"); // Sensor reading failed
+      return;
+    }
+
+    // Sending read values to serial bus
+    Serial.print("HUMIDITY");
+    Serial.print((int) h);
+    Serial.print(" TEMPERATURE");
+    Serial.print((int) t);
+
+    // Reading moisture and sending to the serial bus
+    int moisture = analogRead(MOISTUREPIN);
     /*
      * Converting raw value from the sensor to percentage
-     * (HSENSOR_MIN or lower -> 100%, HSENSOR_MAX -> 0%)
+     * (MSENSOR_MIN or lower -> 100%, MSENSOR_MAX -> 0%)
      * See: http://www.instructables.com/id/Arduino-LCD-Soil-Moisture-Sensor/?ALLSTEPS
      */
-    humidity = constrain(humidity, HSENSOR_MIN, HSENSOR_MAX);
-    humidity = map(humidity, HSENSOR_MIN, HSENSOR_MAX, 100, 0);
-    Serial.print("HUMIDITY");
-    Serial.print(humidity);
+    moisture = constrain(moisture, MSENSOR_MIN, MSENSOR_MAX);
+    moisture = map(moisture, MSENSOR_MIN, MSENSOR_MAX, 100, 0);
+    Serial.print(" MOISTURE");
+    Serial.print(moisture);
 
     // Reading water tank level and sending to the serial bus
     digitalWrite(SONAR_TRIGPIN, HIGH);
