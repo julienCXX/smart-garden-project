@@ -1,5 +1,5 @@
 var Number MIN_WAIT_BETWEEN_WATERINGS = 10 // Unit: refresh iteration
-var Number MAX_HUMIDITY_PERCENT = 30
+var Number MAX_MOISTURE_PERCENT = 30
 var Number MIN_TANK_LEVEL_PERCENT = 20
 
 var Number iterationsWoWatering = 0
@@ -21,26 +21,22 @@ rule "Arduino0 update"
             return false
         }
 
-        /*
         var humidity = transform("REGEX", "HUMIDITY(\\d+).*",
             arduinoOutput)
+        postUpdate(Humidity, humidity)
         var temperature = transform("REGEX", ".*TEMPERATURE(\\d+).*",
             arduinoOutput)
-
-        postUpdate(Humidity, humidity)
         postUpdate(Temperature, temperature)
-        postUpdate(Led, if (Temperature.state >= 23) ON else OFF)
-        */
-        var earthHumidity = transform("REGEX", "HUMIDITY(\\d+).*",
+        var earthMoisture = transform("REGEX", ".*MOISTURE(\\d+).*",
             arduinoOutput)
-        postUpdate(EarthHumidity, earthHumidity)
+        postUpdate(EarthMoisture, earthMoisture)
         var waterLevel = transform("REGEX", ".*WATER_LEVEL(\\d+).*",
             arduinoOutput)
         postUpdate(TankLevel, waterLevel)
 
         // Watering if conditions are met
         if (iterationsWoWatering >= MIN_WAIT_BETWEEN_WATERINGS
-            && EarthHumidity.state < MAX_HUMIDITY_PERCENT
+            && EarthMoisture.state < MAX_MOISTURE_PERCENT
             && TankLevel.state > MIN_TANK_LEVEL_PERCENT) {
             iterationsWoWatering = 0
             logDebug("story1", "Watering!")
