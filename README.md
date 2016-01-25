@@ -1,5 +1,5 @@
 # Smart Garden Project
-Smart garden software, for Ensimag smart building project (2015−2016)
+Smart garden software, for [Ensimag smart building project](http://fablab.ensimag.fr/index.php/PILBI-2015-Team3) (2015−2016)
 
 ## Running
 1. Install Arduino SDK and openHAB prerequisites.
