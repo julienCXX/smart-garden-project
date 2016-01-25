@@ -1,5 +1,7 @@
 var Number MIN_WAIT_BETWEEN_WATERINGS = 10 // Unit: refresh iteration
+// Maximal earth moisture percentage allowed to water plants
 var Number MAX_MOISTURE_PERCENT = 30
+// Minimal water tank level percentage required to water plants
 var Number MIN_TANK_LEVEL_PERCENT = 20
 
 var Number iterationsWoWatering = 0
@@ -44,11 +46,11 @@ rule "Arduino0 update"
         // Watering if conditions are met
         if (ON == AutoWatering.state
             && iterationsWoWatering >= MIN_WAIT_BETWEEN_WATERINGS
-            && EarthMoisture.state < MAX_MOISTURE_PERCENT
-            && TankLevel.state > MIN_TANK_LEVEL_PERCENT) {
-            iterationsWoWatering = 0
+            && EarthMoisture.state <= MAX_MOISTURE_PERCENT
+            && TankLevel.state >= MIN_TANK_LEVEL_PERCENT) {
             logDebug("story1", "Watering!")
             sendCommand(Arduino0, ">MOTOR=PULSE\n")
+            iterationsWoWatering = 0
         } else {
             iterationsWoWatering = iterationsWoWatering + 1
         }
