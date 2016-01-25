@@ -5,6 +5,6 @@ sitemap story1 label="Scénario 1"
         Text item=Temperature
         Text item=EarthMoisture
         Text item=TankLevel labelcolor=[<20="red"] valuecolor=[<20="red"]
-        //Switch item=Led
+        Switch item=AutoWatering
     }
 }

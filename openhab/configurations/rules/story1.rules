@@ -4,6 +4,13 @@ var Number MIN_TANK_LEVEL_PERCENT = 20
 
 var Number iterationsWoWatering = 0
 
+rule Startup
+    when
+        System started
+    then
+        postUpdate(AutoWatering, ON)
+end
+
 rule "Arduino0 update"
     when
         Item Arduino0 received update
@@ -35,7 +42,8 @@ rule "Arduino0 update"
         postUpdate(TankLevel, waterLevel)
 
         // Watering if conditions are met
-        if (iterationsWoWatering >= MIN_WAIT_BETWEEN_WATERINGS
+        if (ON == AutoWatering.state
+            && iterationsWoWatering >= MIN_WAIT_BETWEEN_WATERINGS
             && EarthMoisture.state < MAX_MOISTURE_PERCENT
             && TankLevel.state > MIN_TANK_LEVEL_PERCENT) {
             iterationsWoWatering = 0
@@ -44,14 +52,4 @@ rule "Arduino0 update"
         } else {
             iterationsWoWatering = iterationsWoWatering + 1
         }
-end
-
-rule "LED update"
-    when
-        Item Led received update
-    then
-        if (Led.state == ON)
-            sendCommand(Arduino0, ">LED=ON\n")
-        else
-            sendCommand(Arduino0, ">LED=OFF\n")
 end

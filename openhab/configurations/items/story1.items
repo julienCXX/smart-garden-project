@@ -4,4 +4,4 @@ Number Humidity "Humidité [%d %%]" <water>
 Number Temperature "Température [%d °C]" <temperature>
 Number EarthMoisture "Humidité de la terre [%d %%]" <water>
 Number TankLevel "Remplissage du réservoir [%d %%]" <cistern>
-Switch Led "Del"
+Switch AutoWatering "Arrosage automatique" <clock>
